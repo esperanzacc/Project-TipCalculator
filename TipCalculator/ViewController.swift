@@ -19,10 +19,18 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        billAmountField.delegate = self
-        tipPercentageTextField.delegate = self
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
         registerForKeyboardNotification()
+
     }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    // I search how i can dismiss keyboard after typing textfield. And find a solution from https://www.codegrepper.com/code-examples/swift/dismiss+keyboard+when+tap+outside+swift
 
     func registerForKeyboardNotification() {
       NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(_:)), name: UIResponder.keyboardDidShowNotification, object: nil)
@@ -49,7 +57,7 @@ class ViewController: UIViewController {
 
 
     @IBAction func calculateTip(_ sender: Any) {
-        let totalAmount = Double(billAmountField.text!)!
+        guard let totalAmount = Double(billAmountField.text!), billAmountField.text != "" else { return }
         let tip = totalAmount * 0.15
         tipAmountLabel.text = "Tip Amount is $\(tip.rounded(toPlaces: 2))"
     }
@@ -57,13 +65,6 @@ class ViewController: UIViewController {
     @IBAction func tipPercentageChanged(_ sender: UITextField) {
         guard let totalAmount = Double(billAmountField.text!), billAmountField.text != "" else { return }
         guard let userTypeTip = Double(tipPercentageTextField.text!), tipPercentageTextField.text != "" else { return }
-        let newTip = (totalAmount * userTypeTip) / 100.0
-        tipAmountLabel.text = ""
-        tipAmountLabel.text = "Tip Amount is $\(newTip.rounded(toPlaces: 2))"
-    }
-    @IBAction func tipPercentageTyped(_ sender: Any) {
-        let totalAmount = Double(billAmountField.text!)!
-        let userTypeTip = Double(tipPercentageTextField.text!)!
         let newTip = (totalAmount * userTypeTip) / 100.0
         tipAmountLabel.text = ""
         tipAmountLabel.text = "Tip Amount is $\(newTip.rounded(toPlaces: 2))"
@@ -78,14 +79,6 @@ class ViewController: UIViewController {
         tipAmountLabel.text = "Tip Amount is $\(newAdjustTip.rounded(toPlaces: 2))"
     }
     
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        billAmountField.resignFirstResponder()
-        print(#function)
-        tipPercentageTextField.resignFirstResponder()
-        view.endEditing(true)
-        
-    }
-    
     @IBAction func resetButtonTapped(_ sender: Any) {
         billAmountField.text = ""
         tipAmountLabel.text = ""
@@ -97,15 +90,7 @@ class ViewController: UIViewController {
     }
 
 }
-    
-     
-extension ViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textfield: UITextField) -> Bool {
-        textfield.resignFirstResponder()
-        return true
-    }
-    
-}
+
 
 extension Double {
     func rounded(toPlaces places: Int) -> Double {
@@ -116,7 +101,7 @@ extension Double {
 
 extension UISlider {
     func resetValue(_ sender: UISlider) {
-        sender.value = 0.0
+        sender.value = 15.0
     }
 }
 
